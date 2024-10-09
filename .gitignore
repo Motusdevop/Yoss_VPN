@@ -1,0 +1,8 @@
+.env
+src/.env
+
+.idea
+
+src/__pychache__/
+src/forms/__pychache__/
+src/handlers/__pychache__/
