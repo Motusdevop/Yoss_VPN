@@ -6,3 +6,6 @@ src/.env
 src/__pychache__/
 src/forms/__pychache__/
 src/handlers/__pychache__/
+
+db.db
+src/db.db
