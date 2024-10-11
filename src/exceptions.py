@@ -9,3 +9,9 @@ class ConfigNotFoundException(Exception):
 
 class TariffNotFoundException(Exception):
     pass
+
+class TransactionNotFoundException(Exception):
+    pass
+
+class SubscriptionNotFoundException(Exception):
+    pass

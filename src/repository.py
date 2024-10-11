@@ -1,11 +1,14 @@
+from datetime import datetime
 from typing import List
 
 from database import session_factory
-from exceptions import UserNotFoundException, ServerNotFoundException, TariffNotFoundException
+from exceptions import UserNotFoundException, ServerNotFoundException, TariffNotFoundException, \
+    TransactionNotFoundException, SubscriptionNotFoundException, ConfigNotFoundException
 
-from models import User, Server, Tariff
+from models import User, Server, Tariff, Transaction, Subscription, Config
 
-from sqlalchemy import select
+from sqlalchemy import select, update
+
 
 class UserRepository:
     @classmethod
@@ -16,14 +19,22 @@ class UserRepository:
 
 
     @classmethod
-    def get(cls, chat_id: int):
+    def get_from_chat_id(cls, chat_id: int):
         with session_factory() as session:
             user: User = session.query(User).filter(User.chat_id == chat_id).first()
 
             if user:
                 return user
-            else:
-                raise UserNotFoundException
+            raise UserNotFoundException
+
+    @classmethod
+    def get(cls, user_id: int):
+        with session_factory() as session:
+            user: User = session.query(User).filter(User.id == user_id).first()
+
+            if user:
+                return user
+            raise UserNotFoundException
 
     @classmethod
     def make_admin(cls, chat_id: int):
@@ -46,6 +57,20 @@ class UserRepository:
                 return True
             else:
                 return False
+
+    @classmethod
+    def get_admins(cls) -> List[User]:
+        with session_factory() as session:
+            res: List[User] = session.query(User).filter(User.role == "admin").all()
+            return res
+
+    @classmethod
+    def update(cls, user_id: int, **kwargs):
+        with session_factory() as session:
+            query = update(User).where(User.id == user_id).values(**kwargs)
+            session.execute(query)
+            session.commit()
+
 
 class ServerRepository():
 
@@ -102,6 +127,86 @@ class TariffRepository:
         with session_factory() as session:
             session.query(Tariff).filter(Tariff.id == tariff_id).delete()
             session.commit()
+
+class TransactionRepository:
+    @classmethod
+    def add(cls, transaction: Transaction):
+        with session_factory() as session:
+            session.add(transaction)
+            session.commit()
+
+    @classmethod
+    def get(cls, transaction_id: int) -> Transaction:
+        with session_factory() as session:
+            transaction: Transaction = session.query(Transaction).filter(Transaction.id == transaction_id).first()
+            if transaction:
+                return transaction
+            raise TransactionNotFoundException
+
+    @classmethod
+    def get_all(cls) -> List[Transaction]:
+        with session_factory() as session:
+            res = session.query(Transaction).all()
+            return res
+
+    @classmethod
+    def remove(cls, transaction_id: int):
+        with session_factory() as session:
+            session.query(Transaction).filter(Transaction.id == transaction_id).delete()
+            session.commit()
+
+class SubscriptionRepository:
+    @classmethod
+    def add(cls, subscription: Subscription) -> int:
+        with session_factory() as session:
+            session.add(subscription)
+            session.commit()
+            return subscription.id
+
+    @classmethod
+    def get(cls, subscription_id: int) -> Subscription:
+        with session_factory() as session:
+            subscription: Subscription = session.query(Subscription).filter(Subscription.id == subscription_id).first()
+            if subscription:
+                return subscription
+            raise SubscriptionNotFoundException
+
+    @classmethod
+    def get_from_user_id(cls, user_id: int) -> List[Subscription]:
+        with session_factory() as session:
+            subscriptions: List[Subscription] = session.query(Subscription).filter(Subscription.user_id == user_id).all()
+            return subscriptions
+
+    @classmethod
+    def set_expired_on(cls, subscription_id: int, new_expires_on: datetime):
+        with session_factory() as session:
+            query = session.query(Subscription).filter(Subscription.id == subscription_id).update({"expires_on": new_expires_on})
+            session.commit()
+
+
+    @classmethod
+    def get_all(cls) -> List[Subscription]:
+        with session_factory() as session:
+            res = session.query(Subscription).all()
+            return res
+
+class ConfigRepository:
+    @classmethod
+    def add(cls, config: Config) -> int:
+        with session_factory() as session:
+            session.add(config)
+            session.commit()
+            return config.id
+
+    @classmethod
+    def get(cls, config_id: int) -> Config:
+        with session_factory() as session:
+            config: Config = session.query(Config).filter(Config.id == config_id).first()
+
+            if config:
+                return config
+            raise ConfigNotFoundException
+
 
 
 

@@ -1,7 +1,7 @@
 from sqlalchemy.orm import declarative_base, relationship
 from sqlalchemy import (Column, Integer, String, Boolean,
                         ForeignKey, ForeignKeyConstraint,
-                        DateTime, UniqueConstraint)
+                        DateTime, UniqueConstraint, Text)
 
 from datetime import datetime
 
@@ -18,8 +18,6 @@ class User(Base):
     phone = Column(String)
     free_trial = Column(Boolean, default=True)
     role = Column(String, nullable=False, default='user')
-
-    configs = relationship('Config', backref='user')
 
     # id: Mapped[int] = mapped_column(primary_key=True)
     # nickname: Mapped[str]
@@ -38,7 +36,7 @@ class Config(Base):
     created_on = Column(DateTime(), default=datetime.now)
     disabled = Column(Boolean, default=False)
     server_id = Column(Integer, ForeignKey('servers.id'), nullable=False)
-    file = Column(String, nullable=False)
+    file = Column(Text)
 
     # id: Mapped[int] = mapped_column(primary_key=True)
     # name: Mapped[str] = mapped_column(nullable=False)
@@ -72,4 +70,14 @@ class Tariff(Base):
     id = Column(Integer, primary_key=True)
     name = Column(String, nullable=False)
     price = Column(Integer, nullable=False)
+
+class Transaction(Base):
+    __tablename__ = 'transactions'
+
+    id = Column(Integer, primary_key=True)
+    user_id = Column(Integer, ForeignKey('users.id'), nullable=False)
+    server_id = Column(Integer, ForeignKey('servers.id'), nullable=False)
+    tariff_id = Column(Integer, ForeignKey('tariffs.id'), nullable=False)
+    subscription_id = Column(Integer, ForeignKey('subscriptions.id'), nullable=True)
+    created_on = Column(DateTime(), default=datetime.now)
 
