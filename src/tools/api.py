@@ -42,11 +42,28 @@ def ping(ip_address: str) -> bool:
 def generate_qr(config: str) -> str:
     data = {'data': config}
     text = urlencode(data)
-    return f'https://api.qrserver.com/v1/create-qr-code/?size=500x500&data={text}'
+    return f'https://api.qrserver.com/v1/create-qr-code/?size=500x500&{text}'
+
+# def test():
+#     import qrcode
+#     text = """PrivateKey = uLiVnCBLAunPKGzI3/4VeSPtBlh0UeBq2gGowz3SiU8=
+# Address = 10.216.67.4/24
+# DNS = 9.9.9.9, 149.112.112.112
+#
+# [Peer]
+# PublicKey = Ni8wDThJYZoPzABYYP4y8tzTwPWwPjKjNyG+dn4c93s=
+# PresharedKey = lgJ66D8xKzcXCEVTr9ZnVPZCzyluBs+TwK6fZHfu1p0=
+# Endpoint = 138.124.30.198:51820
+# AllowedIPs = 0.0.0.0/0, ::0/0"""
+#     img: qrcode.image.pil.PilImage= qrcode.make(text)
+#     img.show()
+
 
 
 if __name__ == '__main__':
     ip_address = 'http://138.124.30.198:8000'
-    config_name = 'test_config'
-    print(create_config(ip_address, config_name)[config_name])
-    print(delete_config(ip_address, config_name))
+    # config_name = 'test_config'
+    # print(create_config(ip_address, config_name)[config_name])
+    # print(delete_config(ip_address, config_name))
+
+    # test()
