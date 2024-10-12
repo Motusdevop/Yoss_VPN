@@ -152,16 +152,16 @@ async def check_pay_confirm(callback: Message, state: FSMContext):
                 subscription = SubscriptionRepository.get(subscription_id)
 
                 text = f'''
-    <b>Ваш платёж принят</b>
+<b>Ваш платёж принят</b>
     
-    <b>Ваш VPN конфиг:</b>
-    <b>Закончится:</b> {subscription.expires_on.strftime("%d.%m.%Y")}
-    <b>Сервер:</b> {server.address}
-    <b>Страна:</b> {server.country}
-    <b>Стоимость:</b> {tariff.price} рублей
+<b>Ваш VPN конфиг:</b>
+<b>Закончится:</b> {subscription.expires_on.strftime("%d.%m.%Y")}
+<b>Сервер:</b> {server.address}
+<b>Страна:</b> {server.country}
+<b>Стоимость:</b> {tariff.price} рублей
     
-    Благодарим за доверие!
-    '''
+Благодарим за доверие!
+'''
                 await callback.bot.send_message(user.chat_id, text, parse_mode=ParseMode.HTML)
                 await callback.bot.send_message(user.chat_id,
                                                 f'```\n{config.file}```',
@@ -173,7 +173,19 @@ async def check_pay_confirm(callback: Message, state: FSMContext):
                 subscription = SubscriptionRepository.get(transaction.subscription_id)
 
                 add_time = timedelta(days=30) if tariff.id == 1 else timedelta(days=90)
-                SubscriptionRepository.set_expired_on(subscription.id, subscription.expires_on + add_time)
+
+                if subscription.expires_on > datetime.now():
+                    SubscriptionRepository.set_expired_on(subscription.id, subscription.expires_on + add_time)
+                else:
+                    SubscriptionRepository.set_expired_on(subscription.id, datetime.now() + add_time)
+                    config = ConfigRepository.get(subscription.config_id)
+                    server = ServerRepository.get(config.server_id)
+
+                    ip_address = f'http://{server.address}:{server.port}'
+
+                    api.config_on(ip_address, config_name=config.name)
+
+                    ConfigRepository.update(config.id, disabled=False)
 
                 text = f'''
 <b>Ваш платёж принят</b>

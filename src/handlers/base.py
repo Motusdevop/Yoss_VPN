@@ -1,15 +1,15 @@
 from aiogram import Router, F
 from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
-from aiogram.types import Message
+from aiogram.types import Message, InlineKeyboardButton, InlineKeyboardMarkup
 
 from config import settings
 from keyboards import Contact, Menu, Choose_Instruction, ServerKeyboard, BuyOrExtend
 from texts import instructions_for_PC, instructions_for_phone
 
 from forms.register import RegisterForm
-from forms.vpn import BuyVPN
-from repository import UserRepository, TariffRepository, SubscriptionRepository
+from forms.vpn import BuyVPN, MyVPN
+from repository import UserRepository, TariffRepository, SubscriptionRepository, ConfigRepository, ServerRepository
 
 router = Router()
 
@@ -74,4 +74,28 @@ async def buy_vpn(message: Message, state: FSMContext):
 @router.message(F.text.lower() == 'мой vpn')
 async def my_vpn(message: Message, state: FSMContext):
     if await check_register(message, state):
-        await message.answer('Ваш VPN')
+        user = UserRepository.get_from_chat_id(message.from_user.id)
+
+        subscriptions_list = SubscriptionRepository.get_from_user_id(user.id)
+
+        if not len(subscriptions_list) == 0:
+            kb = []
+
+            for subscription in subscriptions_list:
+                config = ConfigRepository.get(subscription.config_id)
+                server = ServerRepository.get(config.server_id)
+
+                kb.append([InlineKeyboardButton(text=f'{server.country} [{server.id}] закончится: {subscription.expires_on.strftime("%d.%m.%Y")}',
+                                                callback_data=f'{subscription.id}')])
+
+            kb.append([InlineKeyboardButton(text='Отмена', callback_data='cancel')])
+
+            markup = InlineKeyboardMarkup(inline_keyboard=kb)
+
+            await state.set_state(MyVPN.subscription_id)
+            await message.answer('Выберите одну из ваших подписок:', reply_markup=markup)
+
+        else:
+            await message.answer('У вас пока нет подписок.', reply_markup=Menu.markup)
+
+

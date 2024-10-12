@@ -101,6 +101,14 @@ class ServerRepository():
             session.query(Server).filter(Server.id == server_id).delete()
             session.commit()
 
+    @classmethod
+    def update(cls, server_id: int, **kwargs):
+        with session_factory() as session:
+            query = update(Server).where(Server.id == server_id).values(**kwargs)
+            session.execute(query)
+            session.commit()
+
+
 class TariffRepository:
     @classmethod
     def get_all(cls) -> List[Tariff]:
@@ -207,7 +215,12 @@ class ConfigRepository:
                 return config
             raise ConfigNotFoundException
 
-
+    @classmethod
+    def update(cls, config_id, **kwargs):
+        with session_factory() as session:
+            query = update(Config).where(Config.id == int(config_id)).values(**kwargs)
+            session.execute(query)
+            session.commit()
 
 
 if __name__ == '__main__':
