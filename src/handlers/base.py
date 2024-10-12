@@ -41,6 +41,9 @@ async def start(message: Message, state: FSMContext):
 
     await check_register(message, state)
 
+@router.message(F.text, Command('help'))
+async def help(message: Message, state: FSMContext):
+    await message.answer('Для помощи обращайтесь к администратору @Kapchonka77', reply_markup=Menu.markup)
 
 @router.message(F.text.lower() == 'инструкция по активации')
 async def instruction(message: Message, state: FSMContext):
