@@ -36,7 +36,7 @@ async def check_register(message: Message, state: FSMContext):
 
 @router.message(F.text, Command('start'))
 async def start(message: Message, state: FSMContext):
-    await message.answer('Привет! Я бот, который поможет тебе узнать, что твои друзья твои друзья',
+    await message.answer('Привет! Если хочешь начать пользоваться хорошим VPN за адекватные деньги, то ты по адресу',
                          reply_markup=Menu.markup)
 
     await check_register(message, state)
