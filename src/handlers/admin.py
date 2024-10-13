@@ -16,7 +16,7 @@ from repository import UserRepository, ServerRepository, TransactionRepository, 
 from handlers.base import check_register
 from forms.admin import CheckPay
 
-from tools import api, vpn
+from tools import api, vpn, bot_mode
 
 router = Router()
 
@@ -45,6 +45,46 @@ async def add_server(message: Message, state: FSMContext):
         else:
             await message.answer('Вы не администратор')
 
+@router.message(Command('status'))
+async def status(message: Message, state: FSMContext):
+    if await check_register(message, state):
+        user = UserRepository.get_from_chat_id(message.from_user.id)
+        if user.role == 'admin':
+            mode = bot_mode.BotMode()
+            await message.answer(mode.status)
+    else:
+        await message.answer('Вы не администратор')
+
+@router.message(Command('buy_action'))
+async def tech_work(message: Message, state: FSMContext):
+    if await check_register(message, state):
+        user = UserRepository.get_from_chat_id(message.from_user.id)
+        if user.role == 'admin':
+            mode = bot_mode.BotMode()
+            if mode.buy_action:
+                mode.set_buy_action(False)
+            else:
+                mode.set_buy_action(True)
+
+            mode = bot_mode.BotMode()
+
+            await message.answer(mode.status)
+
+
+@router.message(Command('my_vpn_action'))
+async def tech_work(message: Message, state: FSMContext):
+    if await check_register(message, state):
+        user = UserRepository.get_from_chat_id(message.from_user.id)
+        if user.role == 'admin':
+            mode = bot_mode.BotMode()
+            if mode.my_vpn_action:
+                mode.set_my_vpn_action(False)
+            else:
+                mode.set_my_vpn_action(True)
+
+            mode = bot_mode.BotMode()
+
+            await message.answer(mode.status)
 
 @router.message(Command('list_servers'))
 async def list_servers(message: Message, state: FSMContext):

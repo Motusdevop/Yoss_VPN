@@ -9,3 +9,5 @@ src/handlers/__pychache__/
 
 db.db
 src/db.db
+
+src/bot_mode.json

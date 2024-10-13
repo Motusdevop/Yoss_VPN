@@ -11,6 +11,8 @@ from forms.register import RegisterForm
 from forms.vpn import BuyVPN, MyVPN
 from repository import UserRepository, TariffRepository, SubscriptionRepository, ConfigRepository, ServerRepository
 
+from tools.bot_mode import BotMode
+
 router = Router()
 
 
@@ -63,42 +65,50 @@ async def phone(message: Message, state: FSMContext):
 @router.message(F.text.lower() == 'купить/продлить vpn')
 async def buy_vpn(message: Message, state: FSMContext):
     if await check_register(message, state):
-        user = UserRepository.get_from_chat_id(message.from_user.id)
-        subscriptions_list = SubscriptionRepository.get_from_user_id(user.id)
-        if len(subscriptions_list) == 0:
-            server_keyboard = ServerKeyboard()
-            await state.set_state(BuyVPN.server_id)
-            await message.answer('Выберите интересующуй вас сервер', reply_markup=server_keyboard.markup)
+        mode = BotMode()
+        if mode.buy_action:
+            user = UserRepository.get_from_chat_id(message.from_user.id)
+            subscriptions_list = SubscriptionRepository.get_from_user_id(user.id)
+            if len(subscriptions_list) == 0:
+                server_keyboard = ServerKeyboard()
+                await state.set_state(BuyVPN.server_id)
+                await message.answer('Выберите интересующуй вас сервер', reply_markup=server_keyboard.markup)
+            else:
+                await state.set_state(BuyVPN.buy_or_extend)
+                await message.answer('Выберите действие', reply_markup=BuyOrExtend.markup)
         else:
-            await state.set_state(BuyVPN.buy_or_extend)
-            await message.answer('Выберите действие', reply_markup=BuyOrExtend.markup)
+            await message.answer('Ведутся технические работы, пожалуйста подождите', reply_markup=Menu.markup)
 
 
 @router.message(F.text.lower() == 'мой vpn')
 async def my_vpn(message: Message, state: FSMContext):
     if await check_register(message, state):
-        user = UserRepository.get_from_chat_id(message.from_user.id)
+        mode = BotMode()
+        if mode.my_vpn_action:
+            user = UserRepository.get_from_chat_id(message.from_user.id)
 
-        subscriptions_list = SubscriptionRepository.get_from_user_id(user.id)
+            subscriptions_list = SubscriptionRepository.get_from_user_id(user.id)
 
-        if not len(subscriptions_list) == 0:
-            kb = []
+            if not len(subscriptions_list) == 0:
+                kb = []
 
-            for subscription in subscriptions_list:
-                config = ConfigRepository.get(subscription.config_id)
-                server = ServerRepository.get(config.server_id)
+                for subscription in subscriptions_list:
+                    config = ConfigRepository.get(subscription.config_id)
+                    server = ServerRepository.get(config.server_id)
 
-                kb.append([InlineKeyboardButton(text=f'{server.country} [{server.id}] закончится: {subscription.expires_on.strftime("%d.%m.%Y")}',
-                                                callback_data=f'{subscription.id}')])
+                    kb.append([InlineKeyboardButton(text=f'{server.country} [{server.id}] закончится: {subscription.expires_on.strftime("%d.%m.%Y")}',
+                                                    callback_data=f'{subscription.id}')])
 
-            kb.append([InlineKeyboardButton(text='Отмена', callback_data='cancel')])
+                kb.append([InlineKeyboardButton(text='Отмена', callback_data='cancel')])
 
-            markup = InlineKeyboardMarkup(inline_keyboard=kb)
+                markup = InlineKeyboardMarkup(inline_keyboard=kb)
 
-            await state.set_state(MyVPN.subscription_id)
-            await message.answer('Выберите одну из ваших подписок:', reply_markup=markup)
+                await state.set_state(MyVPN.subscription_id)
+                await message.answer('Выберите одну из ваших подписок:', reply_markup=markup)
 
+            else:
+                await message.answer('У вас пока нет подписок.', reply_markup=Menu.markup)
         else:
-            await message.answer('У вас пока нет подписок.', reply_markup=Menu.markup)
+            await message.answer('Ведутся технические работы, пожалуйста подождите', reply_markup=Menu.markup)
 
 
