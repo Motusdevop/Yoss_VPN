@@ -73,5 +73,18 @@ class MyVPNKeyboard():
 
     markup = InlineKeyboardMarkup(inline_keyboard=kb)
 
+class UserManagementKeyboard():
+    kb = [[InlineKeyboardButton(text='Удалить аккаунт', callback_data='delete'),
+           InlineKeyboardButton(text='Подписки', callback_data='subscriptions')]]
+
+    markup = InlineKeyboardMarkup(inline_keyboard=kb)
+
+class SubscriptionKeyboard():
+    kb = [[InlineKeyboardButton(text='Удалить', callback_data='delete'),
+           InlineKeyboardButton(text='Удалить с конфигом', callback_data='delete_config')],
+          [InlineKeyboardButton(text='Изменить время окончания', callback_data='change_expire')]]
+
+    markup = InlineKeyboardMarkup(inline_keyboard=kb)
+
 
 

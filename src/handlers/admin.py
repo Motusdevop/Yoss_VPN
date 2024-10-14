@@ -4,7 +4,7 @@ from typing import List
 from aiogram import Router
 from aiogram.enums import ParseMode
 from aiogram.filters import Command
-from aiogram.types import Message, InlineKeyboardButton, InlineKeyboardMarkup
+from aiogram.types import Message, InlineKeyboardButton, InlineKeyboardMarkup, CallbackQuery
 from aiogram.fsm.context import FSMContext
 
 from config import settings
@@ -14,9 +14,11 @@ from models import Server, Transaction, Config, Subscription
 from repository import UserRepository, ServerRepository, TransactionRepository, TariffRepository, ConfigRepository, \
     SubscriptionRepository
 from handlers.base import check_register
-from forms.admin import CheckPay
+from forms.admin import CheckPay, UserManager, SubscriptionManager
 
 from tools import api, vpn, bot_mode
+
+from keyboards import UserManagementKeyboard, SubscriptionKeyboard
 
 router = Router()
 
@@ -54,6 +56,146 @@ async def status(message: Message, state: FSMContext):
             await message.answer(mode.status)
     else:
         await message.answer('Вы не администратор')
+
+@router.message(Command('user_manage'))
+async def user_manage(message: Message, state: FSMContext):
+    if await check_register(message, state):
+        user = UserRepository.get_from_chat_id(message.from_user.id)
+        if user.role == 'admin':
+            UserRepository.get_all()
+            for user in UserRepository.get_all():
+                await message.answer(f'id={user.id}\nusername={user.username}\nrole={user.role}')
+        else:
+            await message.answer('Вы не администратор')
+
+@router.message(Command('user'))
+async def user(message: Message, state: FSMContext):
+    if await check_register(message, state):
+        user = UserRepository.get_from_chat_id(message.from_user.id)
+        if user.role == 'admin':
+            args = message.text.split()
+            try:
+                id = int(args[1])
+                user = UserRepository.get(id)
+                await message.answer(f'id={user.id}\nusername={user.username}\nrole={user.role}', reply_markup=UserManagementKeyboard.markup)
+                await state.update_data(user=user)
+                await state.set_state(UserManager.action)
+            except ValueError:
+                await message.answer('Комманда введена некорректно')
+        else:
+            await message.answer('Комманда введена некорректно')
+
+
+@router.callback_query(UserManager.action)
+async def user_manage(callback: CallbackQuery, state: FSMContext):
+    await callback.message.delete()
+    if callback.data == 'delete':
+        data = await state.get_data()
+
+        user = data['user']
+
+        transaction_list = TransactionRepository.get_from_user_id(user.id)
+        for transaction in transaction_list:
+            TransactionRepository.delete(transaction.id)
+
+        subscription_list = SubscriptionRepository.get_from_user_id(user.id)
+        for subscription in subscription_list:
+            config = ConfigRepository.get(subscription.config_id)
+            server = ServerRepository.get(config.server_id)
+
+            ip_address = f'http://{server.address}:{server.port}'
+            ConfigRepository.delete(config.id)
+            ServerRepository.update(server.id, count_of_configs=server.count_of_configs-1)
+
+            api.delete_config(ip_address, config.name)
+            SubscriptionRepository.delete(subscription.id)
+
+
+        UserRepository.delete(user.id)
+
+        await callback.message.answer('Пользователь удален')
+    elif callback.data == 'subscriptions':
+        data = await state.get_data()
+        user = data['user']
+        subscription_list = SubscriptionRepository.get_from_user_id(user.id)
+
+        for subscription in subscription_list:
+            text = f'''id={subscription.id}
+config_id={subscription.config_id}
+created_on={subscription.created_on}
+expires_on={subscription.expires_on}
+user_id={subscription.user_id}
+'''
+            await callback.message.answer(text)
+
+@router.message(Command('subscription'))
+async def subscription_manager(message: Message, state: FSMContext):
+    if await check_register(message, state):
+        user = UserRepository.get_from_chat_id(message.from_user.id)
+        if user.role == 'admin':
+            args = message.text.split()
+            try:
+                id = int(args[1])
+
+                subscription = SubscriptionRepository.get(id)
+
+                text = f'''id={subscription.id}
+config_id={subscription.config_id}
+created_on={subscription.created_on}
+expires_on={subscription.expires_on}
+user_id={subscription.user_id}
+'''
+                await message.answer(text, reply_markup=SubscriptionKeyboard.markup)
+                await state.update_data(subscription=subscription)
+                await state.set_state(SubscriptionManager.action)
+            except ValueError:
+                await message.answer('Комманда введена некорректно')
+
+@router.callback_query(SubscriptionManager.action)
+async def subscription_manager(callback: CallbackQuery, state: FSMContext):
+
+    data = await state.get_data()
+    subscription = data['subscription']
+    if callback.data == 'delete':
+
+        SubscriptionRepository.delete(subscription.id)
+        await callback.message.answer('Подписка удалена')
+
+    elif callback.data == 'delete_config':
+
+        SubscriptionRepository.delete(subscription.id)
+
+        config = ConfigRepository.get(subscription.config_id)
+
+        server = ServerRepository.get(config.server_id)
+
+        ip_address = f'http://{server.address}:{server.port}'
+
+        ConfigRepository.delete(subscription.config_id)
+
+        api.delete_config(ip_address, config.name)
+        ServerRepository.update(server.id, count_of_configs=server.count_of_configs - 1)
+
+        await callback.message.answer('Подписка и конфиг удалены')
+
+    elif callback.data == 'change_expire':
+
+        await callback.message.answer('Введите новый срок ex: 30.12.2006')
+        await state.update_data(subscription=subscription)
+        await state.set_state(SubscriptionManager.expire)
+
+@router.message(SubscriptionManager.expire)
+async def expire_change(message: Message, state: FSMContext):
+    data = await state.get_data()
+    subscription = data['subscription']
+
+    date = datetime.strptime(message.text, '%d.%m.%Y')
+
+    SubscriptionRepository.set_expired_on(subscription.id, date)
+
+    await message.answer('Подписка обновлена')
+
+
 
 @router.message(Command('buy_action'))
 async def tech_work(message: Message, state: FSMContext):

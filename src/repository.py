@@ -71,6 +71,17 @@ class UserRepository:
             session.execute(query)
             session.commit()
 
+    @classmethod
+    def get_all(cls) -> List[User]:
+        with session_factory() as session:
+            res = session.query(User).all()
+            return res
+
+    @classmethod
+    def delete(cls, user_id: int):
+        with session_factory() as session:
+            session.query(User).filter(User.id == user_id).delete()
+            session.commit()
 
 class ServerRepository():
 
@@ -163,6 +174,18 @@ class TransactionRepository:
             session.query(Transaction).filter(Transaction.id == transaction_id).delete()
             session.commit()
 
+    @classmethod
+    def get_from_user_id(cls, user_id: int) -> List[Transaction]:
+        with session_factory() as session:
+            transactions: List[Transaction] = session.query(Transaction).filter(Transaction.user_id == user_id).all()
+            return transactions
+
+    @classmethod
+    def delete(cls, transaction_id: int):
+        with session_factory() as session:
+            session.query(Transaction).filter(Transaction.id == transaction_id).delete()
+            session.commit()
+
 class SubscriptionRepository:
     @classmethod
     def add(cls, subscription: Subscription) -> int:
@@ -198,6 +221,11 @@ class SubscriptionRepository:
             res = session.query(Subscription).all()
             return res
 
+    @classmethod
+    def delete(cls, subscription_id: int):
+        with session_factory() as session:
+            session.query(Subscription).filter(Subscription.id == subscription_id).delete()
+            session.commit()
 class ConfigRepository:
     @classmethod
     def add(cls, config: Config) -> int:
@@ -220,6 +248,12 @@ class ConfigRepository:
         with session_factory() as session:
             query = update(Config).where(Config.id == int(config_id)).values(**kwargs)
             session.execute(query)
+            session.commit()
+
+    @classmethod
+    def delete(cls, config_id: int):
+        with session_factory() as session:
+            session.query(Config).filter(Config.id == config_id).delete()
             session.commit()
 
 
