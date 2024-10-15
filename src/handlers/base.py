@@ -9,7 +9,8 @@ from texts import instructions_for_PC, instructions_for_phone
 
 from forms.register import RegisterForm
 from forms.vpn import BuyVPN, MyVPN
-from repository import UserRepository, TariffRepository, SubscriptionRepository, ConfigRepository, ServerRepository
+from repository import UserRepository, TariffRepository, SubscriptionRepository, ConfigRepository, ServerRepository, \
+    TransactionRepository
 
 from tools.bot_mode import BotMode
 
@@ -20,6 +21,7 @@ def get_tariff_text(id: int):
     tariff = TariffRepository.get(1)
     text = f'Вы выбрали {tariff.name} за {tariff.price} рублей\n'
     text += f'Переведите {tariff.price} рублей на `{settings.phone_number}` по СБП\n'
+    text += f'Или воспользуйтесь [ссылкой для оплаты]({settings.pay_url})\n'
     text += f'После оплаты нажмите кнопку "Проверить Оплату"\n\n'
     text += f'После потверждения оплаты, вам отправят файл конфигурации для VPN'
 
@@ -68,14 +70,19 @@ async def buy_vpn(message: Message, state: FSMContext):
         mode = BotMode()
         if mode.buy_action:
             user = UserRepository.get_from_chat_id(message.from_user.id)
-            subscriptions_list = SubscriptionRepository.get_from_user_id(user.id)
-            if len(subscriptions_list) == 0:
-                server_keyboard = ServerKeyboard()
-                await state.set_state(BuyVPN.server_id)
-                await message.answer('Выберите интересующуй вас сервер', reply_markup=server_keyboard.markup)
+            transactions = TransactionRepository.get_from_user_id(user.id)
+            if len(transactions) > 0:
+                await message.answer('У вас есть не проверенная транзакция, сначала дождитесь её проверки',
+                                     reply_markup=Menu.markup)
             else:
-                await state.set_state(BuyVPN.buy_or_extend)
-                await message.answer('Выберите действие', reply_markup=BuyOrExtend.markup)
+                subscriptions_list = SubscriptionRepository.get_from_user_id(user.id)
+                if len(subscriptions_list) == 0:
+                    server_keyboard = ServerKeyboard()
+                    await state.set_state(BuyVPN.server_id)
+                    await message.answer('Выберите интересующуй вас сервер', reply_markup=server_keyboard.markup)
+                else:
+                    await state.set_state(BuyVPN.buy_or_extend)
+                    await message.answer('Выберите действие', reply_markup=BuyOrExtend.markup)
         else:
             await message.answer('Ведутся технические работы, пожалуйста подождите', reply_markup=Menu.markup)
 

@@ -19,11 +19,11 @@ router = Router()
 @router.callback_query(BuyVPN.buy_or_extend)
 async def buy_or_extend(callback: CallbackQuery, state: FSMContext):
     if callback.data == 'buy':
-        server_keyboard = ServerKeyboard()
-        await state.set_state(BuyVPN.server_id)
+        # server_keyboard = ServerKeyboard()
+        # await state.set_state(BuyVPN.server_id)
         await callback.message.delete()
-        await callback.message.answer('Выберите интересующуй вас сервер', reply_markup=server_keyboard.markup)
-        # await callback.message.answer('Покупка второго конфига пока недоступна, скоро будет...')
+        # await callback.message.answer('Выберите интересующуй вас сервер', reply_markup=server_keyboard.markup)
+        await callback.message.answer('Покупка второго конфига пока недоступна, скоро будет...')
 
     else:
         await callback.message.delete()
@@ -171,5 +171,9 @@ async def check_pay(callback: CallbackQuery, state: FSMContext):
         for admin in admins:
             text = f'Проверь @{user.username} +{user.phone} на оплату по СБП на сумму {tariff.price}'
             await callback.bot.send_message(admin.chat_id, text)
+
+        await state.clear()
+        await callback.message.delete()
+        await callback.message.answer('Спасибо, ожидайте потверждения оплаты')
     else:
         await callback.message.delete()

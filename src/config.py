@@ -8,6 +8,7 @@ class Settings(BaseSettings):
     admin: int
     phone_number: str
     server_password: SecretStr
+    pay_url: str
 
     model_config = SettingsConfigDict(env_file='.env', env_file_encoding='utf-8')
 
