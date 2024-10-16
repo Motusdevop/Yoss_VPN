@@ -10,3 +10,7 @@ class UserManager(StatesGroup):
 class SubscriptionManager(StatesGroup):
     action =  State()
     expire = State()
+
+# class ServerManager(StatesGroup):
+#     action = State()
+#     count_of_configs = State()

@@ -77,7 +77,7 @@ async def buy_vpn(message: Message, state: FSMContext):
             else:
                 subscriptions_list = SubscriptionRepository.get_from_user_id(user.id)
                 if len(subscriptions_list) == 0:
-                    server_keyboard = ServerKeyboard()
+                    server_keyboard = ServerManageKeyboard()
                     await state.set_state(BuyVPN.server_id)
                     await message.answer('Выберите интересующуй вас сервер', reply_markup=server_keyboard.markup)
                 else:

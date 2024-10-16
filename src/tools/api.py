@@ -12,7 +12,7 @@ def create_config(ip_address: str, config_name: str) -> dict:
 
 
 def get_clients(ip_address: str) -> dict:
-    res = get(ip_address + '/api/vpn/list', auth=auth)
+    res = get(ip_address + '/api/vpn/clients', auth=auth)
     return res.json()
 
 

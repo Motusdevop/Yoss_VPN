@@ -29,9 +29,9 @@ class ServerKeyboard():
         self.server_list: List[Server] = ServerRepository.get_all()
 
         if not len(self.server_list) == 0:
-            self.kb = [[InlineKeyboardButton(text=server.country + f'[{server.id}] подключений: {server.count_of_configs}/15',
+            self.kb = [[InlineKeyboardButton(text=server.country + f'[{server.id}] подключений: {server.count_of_configs}/20',
                                              callback_data=str(server.id))] for
-                       server in self.server_list if server.count_of_configs < 15 and api.ping(f'http://{server.address}:{server.port}/')]
+                       server in self.server_list if server.count_of_configs < 20 and api.ping(f'http://{server.address}:{server.port}/')]
             self.kb.append([InlineKeyboardButton(text='Отменить', callback_data='no_servers')])
         else:
             self.kb = [[InlineKeyboardButton(text='Нет доступных серверов', callback_data='no_servers')]]
@@ -86,5 +86,10 @@ class SubscriptionKeyboard():
 
     markup = InlineKeyboardMarkup(inline_keyboard=kb)
 
+# class ServerManageKeyboard():
+#     kb = [[InlineKeyboardButton(text='Изменить кол-во конфигов', callback_data='change_count_configs')],
+#           InlineKeyboardButton(text='Отменить', callback_data='cancel')]
+#
+#     markup = InlineKeyboardMarkup(inline_keyboard=kb)
 
 

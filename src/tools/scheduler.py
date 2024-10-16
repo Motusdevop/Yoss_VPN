@@ -45,5 +45,17 @@ async def scheduler(bot: Bot):
 
                 notications_list.append(subscription.id)
 
+            servers = ServerRepository.get_all()
+
+            for server in servers:
+                ip_address = f'http://{server.address}:{server.port}'
+                if api.ping(ip_address):
+                    data = api.get_clients(ip_address)
+                    print(data)
+                    clients = data['clients']
+                    ServerRepository.update(server.id, count_of_configs=len(clients))
+
+
+
 
         await asyncio.sleep(120)

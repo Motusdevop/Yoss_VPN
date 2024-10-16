@@ -266,6 +266,21 @@ async def remove_server(message: Message, state: FSMContext):
         else:
             await message.answer('Вы не администратор')
 
+# @router.message(Command('server'))
+# async def server(message: Message, state: FSMContext):
+#     if await check_register(message, state):
+#         user = UserRepository.get_from_chat_id(message.from_user.id)
+#         if user.role == 'admin':
+#             try:
+#                 args = message.text.split()
+#                 id = int(args[1])
+#                 server = ServerRepository.get(id)
+#                 await state.update_data(server=server)
+#
+#                 text = f'''Сервер {id}, адрес: {server.address}:{server.port},
+# кол-во конфигов: {server.count_of_configs}'''
+#                 await message.answer(text, reply_markup=ServerManageKeyboard.markup)
+
 
 @router.message(Command('make_admin'))
 async def make_admin(message: Message, state: FSMContext):
@@ -350,6 +365,9 @@ async def check_pay_confirm(callback: Message, state: FSMContext):
                                                 parse_mode=ParseMode.MARKDOWN_V2)
                 await callback.bot.send_photo(user.chat_id, api.generate_qr(config.file),
                                               caption='Qr Code для мобильных устройств')
+
+                await callback.message.delete()
+                await state.clear()
 
             else:
                 subscription = SubscriptionRepository.get(transaction.subscription_id)
