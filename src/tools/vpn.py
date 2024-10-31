@@ -6,7 +6,14 @@ from tools import api
 
 
 def create_config(username: str, user_id: int, server_id: int) -> Config:
-    config_name = f'{username}_vpn'
+
+    configs = ConfigRepository.get_from_user_id(user_id)
+
+    config_name = f'{len(configs)}_{username}'
+
+    if len(config_name) > 15:
+        config_name = config_name[:15]
+
     config = Config(name=config_name, user_id=user_id, server_id=server_id)
 
     server = ServerRepository.get(server_id)

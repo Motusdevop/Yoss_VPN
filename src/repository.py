@@ -256,6 +256,12 @@ class ConfigRepository:
             session.query(Config).filter(Config.id == config_id).delete()
             session.commit()
 
+    @classmethod
+    def get_from_user_id(cls, user_id: int) -> List[Config]:
+        with session_factory() as session:
+            configs: List[Config] = session.query(Config).filter(Config.user_id == user_id).all()
+            return configs
+
 
 if __name__ == '__main__':
     server = Server(address="127.0.0.1", port=80, country="Russia")

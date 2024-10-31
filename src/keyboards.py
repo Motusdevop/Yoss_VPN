@@ -8,9 +8,9 @@ from repository import ServerRepository, TariffRepository
 
 
 class Menu():
-    kb = [[KeyboardButton(text='Купить/продлить VPN')],
-          [KeyboardButton(text='Инструкция по активации'), KeyboardButton(text='О нас')],
-          [KeyboardButton(text='Мой VPN')]]
+    kb = [[KeyboardButton(text='Купить/продлить VPN 🌐')],
+          [KeyboardButton(text='Инструкция по активации ❔'), KeyboardButton(text='О нас 📖')],
+          [KeyboardButton(text='Мой VPN 📂')]]
 
     markup = ReplyKeyboardMarkup(keyboard=kb, resize_keyboard=True)
 

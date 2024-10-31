@@ -1,4 +1,5 @@
 from aiogram import Router, F
+from aiogram.enums import ParseMode
 from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message, InlineKeyboardButton, InlineKeyboardMarkup
@@ -40,8 +41,33 @@ async def check_register(message: Message, state: FSMContext):
 
 @router.message(F.text, Command('start'))
 async def start(message: Message, state: FSMContext):
-    await message.answer('Привет! Если хочешь начать пользоваться хорошим VPN за адекватные деньги, то ты по адресу',
-                         reply_markup=Menu.markup)
+    text = '''
+*Yoss VPN это:*
+
+🚀 Высокосоростной анонимный VPN с безлимитным трафиком и низкими ценами
+
+📱 Доступ к Instagram, Discord, YouTube, TikTok, 4k контенту, Twitter и другим недоступным ресурсам
+
+🕵️ Анонимность и безопасность
+
+💳 Оплата переводом через СБП
+
+🙋‍♂️ Техподдержка всегда поможет в чате
+
+🌍 Локации: 🇳🇱
+
+Цена: 150₽/ мес (одно устройство)
+
+*Как это работает?*
+1. Отправьте свой контакт ☎️
+2. Выберите интересующуй вас сервер 🌐
+3. Выберите интересующуй вас тариф 💰
+4. Переведите деньги на указанный счёт 💳
+5. Дождитесь подтверждения оплаты ⏳
+6. Получите файл конфигурации 📄
+'''
+    await message.answer(text,
+                         reply_markup=Menu.markup, parse_mode=ParseMode.MARKDOWN)
 
     await check_register(message, state)
 
@@ -49,7 +75,7 @@ async def start(message: Message, state: FSMContext):
 async def help(message: Message, state: FSMContext):
     await message.answer('Для помощи обращайтесь к администратору @Kapchonka77', reply_markup=Menu.markup)
 
-@router.message(F.text.lower() == 'инструкция по активации')
+@router.message(F.text.lower() == 'инструкция по активации ❔')
 async def instruction(message: Message, state: FSMContext):
     await message.answer('Для какой плотформы?', reply_markup=Choose_Instruction.markup)
 
@@ -64,7 +90,7 @@ async def phone(message: Message, state: FSMContext):
     await message.answer(instructions_for_phone, reply_markup=Menu.markup)
 
 
-@router.message(F.text.lower() == 'купить/продлить vpn')
+@router.message(F.text.lower() == 'купить/продлить vpn 🌐')
 async def buy_vpn(message: Message, state: FSMContext):
     if await check_register(message, state):
         mode = BotMode()
@@ -87,7 +113,7 @@ async def buy_vpn(message: Message, state: FSMContext):
             await message.answer('Ведутся технические работы, пожалуйста подождите', reply_markup=Menu.markup)
 
 
-@router.message(F.text.lower() == 'мой vpn')
+@router.message(F.text.lower() == 'мой vpn 📂')
 async def my_vpn(message: Message, state: FSMContext):
     if await check_register(message, state):
         mode = BotMode()
