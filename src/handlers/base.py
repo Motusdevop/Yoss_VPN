@@ -18,7 +18,7 @@ router = Router()
 
 
 def get_tariff_text(id: int):
-    tariff = TariffRepository.get(1)
+    tariff = TariffRepository.get(id)
     text = f'Вы выбрали {tariff.name} за {tariff.price} рублей\n'
     text += f'Переведите {tariff.price} рублей на `{settings.phone_number}` по СБП\n'
     text += f'Или воспользуйтесь [ссылкой для оплаты]({settings.pay_url})\n'
@@ -77,7 +77,7 @@ async def buy_vpn(message: Message, state: FSMContext):
             else:
                 subscriptions_list = SubscriptionRepository.get_from_user_id(user.id)
                 if len(subscriptions_list) == 0:
-                    server_keyboard = ServerManageKeyboard()
+                    server_keyboard = ServerKeyboard()
                     await state.set_state(BuyVPN.server_id)
                     await message.answer('Выберите интересующуй вас сервер', reply_markup=server_keyboard.markup)
                 else:
