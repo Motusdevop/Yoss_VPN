@@ -344,7 +344,8 @@ async def check_pay_confirm(callback: Message, state: FSMContext):
                 server = ServerRepository.get(transaction.server_id)
 
                 config = vpn.create_config(username=user.username, user_id=user.id, server_id=server.id)
-                days = 30 if tariff.name == 'one_month' else 90
+                days = 30 if tariff.id == 1 else 90
+                print(days)
                 subscription_id = vpn.create_subscription(user_id=user.id, config_id=config.id, days=days)
                 subscription = SubscriptionRepository.get(subscription_id)
 
