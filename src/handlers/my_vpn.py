@@ -4,7 +4,7 @@ from datetime import datetime
 from aiogram import Router
 from aiogram.enums import ParseMode
 from aiogram.fsm.context import FSMContext
-from aiogram.types import CallbackQuery
+from aiogram.types import CallbackQuery, BufferedInputFile
 
 from forms.vpn import MyVPN, BuyVPN
 from repository import SubscriptionRepository, ConfigRepository, ServerRepository, UserRepository
@@ -105,7 +105,9 @@ async def action(callback: CallbackQuery, state: FSMContext):
             config = ConfigRepository.get(subscription.config_id)
 
             await callback.message.answer('Конфиг:')
-            await callback.message.answer(f'```{config.file}```', parse_mode=ParseMode.MARKDOWN)
+            file = BufferedInputFile(str.encode(config.file), 'YossVPN.conf')
+            await callback.message.answer_document(file)
+
             await callback.message.answer_photo(api.generate_qr(config.file))
     else:
         await state.clear()

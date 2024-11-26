@@ -4,7 +4,7 @@ from typing import List
 from aiogram import Router
 from aiogram.enums import ParseMode
 from aiogram.filters import Command
-from aiogram.types import Message, InlineKeyboardButton, InlineKeyboardMarkup, CallbackQuery
+from aiogram.types import Message, InlineKeyboardButton, InlineKeyboardMarkup, CallbackQuery, BufferedInputFile
 from aiogram.fsm.context import FSMContext
 
 from config import settings
@@ -361,9 +361,10 @@ async def check_pay_confirm(callback: Message, state: FSMContext):
 Благодарим за доверие!
 '''
                 await callback.bot.send_message(user.chat_id, text, parse_mode=ParseMode.HTML)
-                await callback.bot.send_message(user.chat_id,
-                                                f'```\n{config.file}```',
-                                                parse_mode=ParseMode.MARKDOWN_V2)
+
+                file = BufferedInputFile(str.encode(config.file), 'YossVPN.conf')
+                await callback.message.answer_document(file)
+
                 await callback.bot.send_photo(user.chat_id, api.generate_qr(config.file),
                                               caption='Qr Code для мобильных устройств')
 
