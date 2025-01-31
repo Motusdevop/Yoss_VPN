@@ -8,6 +8,7 @@ class BuyVPN(StatesGroup):
     tariff = State()
     check_pay = State()
 
+
 class MyVPN(StatesGroup):
     subscription_id = State()
     action = State()

@@ -1,15 +1,23 @@
-from sqlalchemy.orm import declarative_base, relationship
-from sqlalchemy import (Column, Integer, String, Boolean,
-                        ForeignKey, ForeignKeyConstraint,
-                        DateTime, UniqueConstraint, Text)
-
 from datetime import datetime
+
+from sqlalchemy import (
+    Boolean,
+    Column,
+    DateTime,
+    ForeignKey,
+    ForeignKeyConstraint,
+    Integer,
+    String,
+    Text,
+    UniqueConstraint,
+)
+from sqlalchemy.orm import declarative_base, relationship
 
 Base = declarative_base()
 
 
 class User(Base):
-    __tablename__ = 'users'
+    __tablename__ = "users"
 
     id = Column(Integer, primary_key=True)
     nickname = Column(String)
@@ -17,7 +25,7 @@ class User(Base):
     username = Column(String)
     phone = Column(String)
     free_trial = Column(Boolean, default=True)
-    role = Column(String, nullable=False, default='user')
+    role = Column(String, nullable=False, default="user")
 
     # id: Mapped[int] = mapped_column(primary_key=True)
     # nickname: Mapped[str]
@@ -28,14 +36,14 @@ class User(Base):
 
 
 class Config(Base):
-    __tablename__ = 'configs'
+    __tablename__ = "configs"
 
     id = Column(Integer, primary_key=True)
     name = Column(String)
-    user_id = Column(Integer, ForeignKey('users.id'), nullable=False)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     created_on = Column(DateTime(), default=datetime.now)
     disabled = Column(Boolean, default=False)
-    server_id = Column(Integer, ForeignKey('servers.id'), nullable=False)
+    server_id = Column(Integer, ForeignKey("servers.id"), nullable=False)
     file = Column(Text)
 
     # id: Mapped[int] = mapped_column(primary_key=True)
@@ -46,17 +54,17 @@ class Config(Base):
 
 
 class Subscription(Base):
-    __tablename__ = 'subscriptions'
+    __tablename__ = "subscriptions"
 
     id = Column(Integer, primary_key=True)
-    user_id = Column(Integer, ForeignKey('users.id'), nullable=False)
-    config_id = Column(Integer, ForeignKey('configs.id'), nullable=False)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    config_id = Column(Integer, ForeignKey("configs.id"), nullable=False)
     created_on = Column(DateTime(), default=datetime.now)
     expires_on = Column(DateTime())
 
 
 class Server(Base):
-    __tablename__ = 'servers'
+    __tablename__ = "servers"
 
     id = Column(Integer, primary_key=True)
     country = Column(String, nullable=False)
@@ -64,20 +72,21 @@ class Server(Base):
     address = Column(String, nullable=False)
     port = Column(Integer, nullable=False)
 
+
 class Tariff(Base):
-    __tablename__ = 'tariffs'
+    __tablename__ = "tariffs"
 
     id = Column(Integer, primary_key=True)
     name = Column(String, nullable=False)
     price = Column(Integer, nullable=False)
 
+
 class Transaction(Base):
-    __tablename__ = 'transactions'
+    __tablename__ = "transactions"
 
     id = Column(Integer, primary_key=True)
-    user_id = Column(Integer, ForeignKey('users.id'), nullable=False)
-    server_id = Column(Integer, ForeignKey('servers.id'), nullable=False)
-    tariff_id = Column(Integer, ForeignKey('tariffs.id'), nullable=False)
-    subscription_id = Column(Integer, ForeignKey('subscriptions.id'), nullable=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    server_id = Column(Integer, ForeignKey("servers.id"), nullable=False)
+    tariff_id = Column(Integer, ForeignKey("tariffs.id"), nullable=False)
+    subscription_id = Column(Integer, ForeignKey("subscriptions.id"), nullable=True)
     created_on = Column(DateTime(), default=datetime.now)
-

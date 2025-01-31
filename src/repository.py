@@ -1,13 +1,18 @@
 from datetime import datetime
 from typing import List
 
-from database import session_factory
-from exceptions import UserNotFoundException, ServerNotFoundException, TariffNotFoundException, \
-    TransactionNotFoundException, SubscriptionNotFoundException, ConfigNotFoundException
-
-from models import User, Server, Tariff, Transaction, Subscription, Config
-
 from sqlalchemy import select, update
+
+from database import session_factory
+from exceptions import (
+    ConfigNotFoundException,
+    ServerNotFoundException,
+    SubscriptionNotFoundException,
+    TariffNotFoundException,
+    TransactionNotFoundException,
+    UserNotFoundException,
+)
+from models import Config, Server, Subscription, Tariff, Transaction, User
 
 
 class UserRepository:
@@ -16,7 +21,6 @@ class UserRepository:
         with session_factory() as session:
             session.add(user)
             session.commit()
-
 
     @classmethod
     def get_from_chat_id(cls, chat_id: int):
@@ -83,7 +87,8 @@ class UserRepository:
             session.query(User).filter(User.id == user_id).delete()
             session.commit()
 
-class ServerRepository():
+
+class ServerRepository:
 
     @classmethod
     def add(cls, server: Server) -> int:
@@ -95,7 +100,9 @@ class ServerRepository():
     @classmethod
     def get(cls, server_id: int) -> Server:
         with session_factory() as session:
-            server: Server = session.query(Server).filter(Server.id == server_id).first()
+            server: Server = (
+                session.query(Server).filter(Server.id == server_id).first()
+            )
             if server:
                 return server
             raise ServerNotFoundException
@@ -136,7 +143,9 @@ class TariffRepository:
     @classmethod
     def get(cls, tariff_id: int) -> Tariff:
         with session_factory() as session:
-            tariff: Tariff = session.query(Tariff).filter(Tariff.id == tariff_id).first()
+            tariff: Tariff = (
+                session.query(Tariff).filter(Tariff.id == tariff_id).first()
+            )
             if tariff:
                 return tariff
             raise TariffNotFoundException
@@ -146,6 +155,7 @@ class TariffRepository:
         with session_factory() as session:
             session.query(Tariff).filter(Tariff.id == tariff_id).delete()
             session.commit()
+
 
 class TransactionRepository:
     @classmethod
@@ -157,7 +167,11 @@ class TransactionRepository:
     @classmethod
     def get(cls, transaction_id: int) -> Transaction:
         with session_factory() as session:
-            transaction: Transaction = session.query(Transaction).filter(Transaction.id == transaction_id).first()
+            transaction: Transaction = (
+                session.query(Transaction)
+                .filter(Transaction.id == transaction_id)
+                .first()
+            )
             if transaction:
                 return transaction
             raise TransactionNotFoundException
@@ -177,7 +191,9 @@ class TransactionRepository:
     @classmethod
     def get_from_user_id(cls, user_id: int) -> List[Transaction]:
         with session_factory() as session:
-            transactions: List[Transaction] = session.query(Transaction).filter(Transaction.user_id == user_id).all()
+            transactions: List[Transaction] = (
+                session.query(Transaction).filter(Transaction.user_id == user_id).all()
+            )
             return transactions
 
     @classmethod
@@ -185,6 +201,7 @@ class TransactionRepository:
         with session_factory() as session:
             session.query(Transaction).filter(Transaction.id == transaction_id).delete()
             session.commit()
+
 
 class SubscriptionRepository:
     @classmethod
@@ -197,7 +214,11 @@ class SubscriptionRepository:
     @classmethod
     def get(cls, subscription_id: int) -> Subscription:
         with session_factory() as session:
-            subscription: Subscription = session.query(Subscription).filter(Subscription.id == subscription_id).first()
+            subscription: Subscription = (
+                session.query(Subscription)
+                .filter(Subscription.id == subscription_id)
+                .first()
+            )
             if subscription:
                 return subscription
             raise SubscriptionNotFoundException
@@ -205,15 +226,22 @@ class SubscriptionRepository:
     @classmethod
     def get_from_user_id(cls, user_id: int) -> List[Subscription]:
         with session_factory() as session:
-            subscriptions: List[Subscription] = session.query(Subscription).filter(Subscription.user_id == user_id).all()
+            subscriptions: List[Subscription] = (
+                session.query(Subscription)
+                .filter(Subscription.user_id == user_id)
+                .all()
+            )
             return subscriptions
 
     @classmethod
     def set_expired_on(cls, subscription_id: int, new_expires_on: datetime):
         with session_factory() as session:
-            query = session.query(Subscription).filter(Subscription.id == subscription_id).update({"expires_on": new_expires_on})
+            query = (
+                session.query(Subscription)
+                .filter(Subscription.id == subscription_id)
+                .update({"expires_on": new_expires_on})
+            )
             session.commit()
-
 
     @classmethod
     def get_all(cls) -> List[Subscription]:
@@ -224,8 +252,12 @@ class SubscriptionRepository:
     @classmethod
     def delete(cls, subscription_id: int):
         with session_factory() as session:
-            session.query(Subscription).filter(Subscription.id == subscription_id).delete()
+            session.query(Subscription).filter(
+                Subscription.id == subscription_id
+            ).delete()
             session.commit()
+
+
 class ConfigRepository:
     @classmethod
     def add(cls, config: Config) -> int:
@@ -237,7 +269,9 @@ class ConfigRepository:
     @classmethod
     def get(cls, config_id: int) -> Config:
         with session_factory() as session:
-            config: Config = session.query(Config).filter(Config.id == config_id).first()
+            config: Config = (
+                session.query(Config).filter(Config.id == config_id).first()
+            )
 
             if config:
                 return config
@@ -259,11 +293,13 @@ class ConfigRepository:
     @classmethod
     def get_from_user_id(cls, user_id: int) -> List[Config]:
         with session_factory() as session:
-            configs: List[Config] = session.query(Config).filter(Config.user_id == user_id).all()
+            configs: List[Config] = (
+                session.query(Config).filter(Config.user_id == user_id).all()
+            )
             return configs
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     server = Server(address="127.0.0.1", port=80, country="Russia")
     a = ServerRepository.add(server)
     print(ServerRepository.get_all())

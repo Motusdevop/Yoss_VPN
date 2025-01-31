@@ -1,5 +1,3 @@
-
-
 instructions_for_PC = """
 Инструкция для ПК:
 1. Установите программу WireGuard

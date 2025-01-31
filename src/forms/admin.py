@@ -1,15 +1,18 @@
-from aiogram.fsm.state import StatesGroup, State
+from aiogram.fsm.state import State, StatesGroup
 
 
 class CheckPay(StatesGroup):
     confirm = State()
 
+
 class UserManager(StatesGroup):
     action = State()
 
+
 class SubscriptionManager(StatesGroup):
-    action =  State()
+    action = State()
     expire = State()
+
 
 # class ServerManager(StatesGroup):
 #     action = State()
