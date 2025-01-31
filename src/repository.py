@@ -141,6 +141,16 @@ class TariffRepository:
             session.commit()
 
     @classmethod
+    def update(cls, tariff: Tariff):
+        with session_factory() as session:
+            try:
+                # Используем merge для автоматического обновления или вставки
+                session.merge(tariff)
+                session.commit()
+            except Exception as e:
+                session.rollback()
+                raise e
+    @classmethod
     def get(cls, tariff_id: int) -> Tariff:
         with session_factory() as session:
             tariff: Tariff = (
